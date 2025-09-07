@@ -1,0 +1,419 @@
+# Security-Observability-Stack .gitignore
+
+# ===========================================
+# Operating System Files
+# ===========================================
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+*~
+
+# ===========================================
+# IDE and Editor Files
+# ===========================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.project
+.classpath
+.settings/
+*.sublime-project
+*.sublime-workspace
+
+# ===========================================
+# Node.js / JavaScript
+# ===========================================
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+lerna-debug.log*
+.pnpm-debug.log*
+
+# Runtime data
+pids
+*.pid
+*.seed
+*.pid.lock
+
+# Coverage directory used by tools like istanbul
+coverage/
+*.lcov
+
+# nyc test coverage
+.nyc_output
+
+# Grunt intermediate storage
+.grunt
+
+# Bower dependency directory
+bower_components
+
+# node-waf configuration
+.lock-wscript
+
+# Compiled binary addons
+build/Release
+
+# Dependency directories
+jspm_packages/
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Optional npm cache directory
+.npm
+
+# Optional eslint cache
+.eslintcache
+
+# Optional stylelint cache
+.stylelintcache
+
+# Microbundle cache
+.rpt2_cache/
+.rts2_cache_cjs/
+.rts2_cache_es/
+.rts2_cache_umd/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# dotenv environment variable files
+.env
+.env.development.local
+.env.test.local
+.env.production.local
+.env.local
+
+# parcel-bundler cache
+.cache
+.parcel-cache
+
+# Next.js build output
+.next
+out
+
+# Nuxt.js build / generate output
+.nuxt
+dist
+
+# Gatsby files
+.cache/
+public
+
+# Storybook build outputs
+.out
+.storybook-out
+storybook-static
+
+# ===========================================
+# Python
+# ===========================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+pip-wheel-metadata/
+share/python-wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
+
+# PyInstaller
+*.manifest
+*.spec
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+*.py,cover
+.hypothesis/
+.pytest_cache/
+
+# Translations
+*.mo
+*.pot
+
+# Django stuff:
+*.log
+local_settings.py
+db.sqlite3
+db.sqlite3-journal
+
+# Flask stuff:
+instance/
+.webassets-cache
+
+# Scrapy stuff:
+.scrapy
+
+# Sphinx documentation
+docs/_build/
+
+# PyBuilder
+target/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# IPython
+profile_default/
+ipython_config.py
+
+# pyenv
+.python-version
+
+# pipenv
+Pipfile.lock
+
+# PEP 582
+__pypackages__/
+
+# Celery stuff
+celerybeat-schedule
+celerybeat.pid
+
+# SageMath parsed files
+*.sage.py
+
+# Environments
+.venv
+env/
+venv/
+ENV/
+env.bak/
+venv.bak/
+
+# Spyder project settings
+.spyderproject
+.spyproject
+
+# Rope project settings
+.ropeproject
+
+# mkdocs documentation
+/site
+
+# mypy
+.mypy_cache/
+.dmypy.json
+dmypy.json
+
+# Pyre type checker
+.pyre/
+
+# ===========================================
+# Docker
+# ===========================================
+.dockerignore
+docker-compose.override.yml
+.docker/
+
+# ===========================================
+# Kubernetes
+# ===========================================
+*.kubeconfig
+kubeconfig*
+.kube/
+*.pem
+*.key
+*.crt
+*.csr
+
+# Helm
+charts/*.tgz
+.helm/
+
+# ===========================================
+# CI/CD and Build Artifacts
+# ===========================================
+# GitHub Actions
+.github/workflows/*.yml.bak
+
+# Jenkins
+.jenkins/
+jenkins_home/
+
+# Build outputs
+build/
+dist/
+target/
+out/
+
+# Tarballs and archives
+*.tar.gz
+*.tar.bz2
+*.zip
+*.rar
+*.7z
+
+# ===========================================
+# Security and Secrets
+# ===========================================
+# Never commit secrets
+secrets/
+*.secret
+*.key
+*.pem
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.truststore
+
+# Environment files with secrets
+.env.*
+!.env.example
+!.env.template
+
+# SSH keys
+id_rsa*
+id_dsa*
+id_ed25519*
+id_ecdsa*
+
+# GPG keys
+*.gpg
+*.asc
+
+# ===========================================
+# Monitoring and Logs
+# ===========================================
+# Prometheus data
+prometheus_data/
+prometheus/
+
+# Grafana data
+grafana_data/
+grafana/
+
+# Log files
+*.log
+logs/
+log/
+
+# ===========================================
+# Database
+# ===========================================
+# SQLite
+*.db
+*.sqlite
+*.sqlite3
+
+# PostgreSQL
+*.dump
+*.sql
+
+# MySQL
+*.sql
+
+# ===========================================
+# Temporary Files
+# ===========================================
+tmp/
+temp/
+.tmp/
+.temp/
+
+# ===========================================
+# Project Specific
+# ===========================================
+# Generated tarballs
+secure-k8s-cicd.tar.gz
+*.tar.gz
+
+# Local development overrides
+docker-compose.override.yml
+k8s/overlays/local/
+helm/my-app/values-local.yaml
+
+# Test artifacts
+test-results/
+test-reports/
+coverage-reports/
+
+# Backup files
+*.bak
+*.backup
+*.old
+
+# ===========================================
+# Security Scanning Results
+# ===========================================
+# Trivy scan results
+trivy-results/
+*.trivy
+
+# Semgrep results
+.semgrep/
+semgrep-results/
+
+# GitLeaks results
+gitleaks-results/
+
+# SBOM files (unless specifically needed)
+*.sbom
+*.spdx
+
+# ===========================================
+# Documentation Build
+# ===========================================
+docs/_build/
+docs/build/
+site/
+_site/
+
+# ===========================================
+# Terraform (if used)
+# ===========================================
+*.tfstate
+*.tfstate.*
+.terraform/
+.terraform.lock.hcl
+*.tfplan
+*.tfplan.*
+
+# ===========================================
+# Ansible (if used)
+# ===========================================
+*.retry
+.ansible/
+ansible.cfg.bak

@@ -1,0 +1,22 @@
+title = "Gitleaks Config"
+
+[extend]
+useDefault = true
+
+[[rules]]
+description = "Kubernetes Service Account Token"
+id = "k8s-service-account-token"
+regex = '''eyJhbGciOiJSUzI1NiIsImtpZCI6Ii'''
+tags = ["key", "kubernetes"]
+
+[[rules]]
+description = "Docker Config"
+id = "docker-config"
+regex = '''(?i)(docker|registry).*['"]*config['"]*\s*[:=]\s*['"]*([a-zA-Z0-9+/]{40,})['"]*'''
+tags = ["key", "docker"]
+
+[[rules]]
+description = "RabbitMQ Connection String"
+id = "rabbitmq-conn-string"
+regex = '''amqps?://[a-zA-Z0-9._-]+:[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+'''
+tags = ["rabbitmq", "connection"]

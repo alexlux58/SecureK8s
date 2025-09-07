@@ -1,0 +1,181 @@
+// Jenkinsfile - Production Deployment Pipeline
+pipeline {
+    agent {
+        kubernetes {
+            yaml """
+apiVersion: v1
+kind: Pod
+spec:
+  containers:
+  - name: kubectl
+    image: bitnami/kubectl:latest
+    command:
+    - cat
+    tty: true
+  - name: helm
+    image: alpine/helm:latest
+    command:
+    - cat
+    tty: true
+  - name: trivy
+    image: aquasec/trivy:latest
+    command:
+    - cat
+    tty: true
+  - name: docker
+    image: docker:dind
+    privileged: true
+    env:
+    - name: DOCKER_TLS_CERTDIR
+      value: ""
+"""
+        }
+    }
+
+    parameters {
+        string(name: 'IMAGE_TAG', defaultValue: 'latest', description: 'Docker image tag to deploy')
+        choice(name: 'DEPLOY_ENV', choices: ['staging', 'production'], description: 'Target environment')
+        string(name: 'GIT_COMMIT', defaultValue: '', description: 'Git commit hash')
+        booleanParam(name: 'SKIP_TESTS', defaultValue: false, description: 'Skip security tests')
+    }
+
+    environment {
+        REGISTRY = 'ghcr.io'
+        IMAGE_NAME = "${env.GITHUB_REPOSITORY ?: 'your-org/your-app'}"
+        KUBE_NAMESPACE = "${params.DEPLOY_ENV}"
+        SLACK_CHANNEL = '#deployments'
+    }
+
+    stages {
+        stage('Validate Parameters') {
+            steps {
+                script {
+                    if (params.IMAGE_TAG == 'latest' && params.DEPLOY_ENV == 'production') {
+                        error("Production deployments require specific image tags, not 'latest'")
+                    }
+                    
+                    echo "Deploying ${env.REGISTRY}/${env.IMAGE_NAME}:${params.IMAGE_TAG} to ${params.DEPLOY_ENV}"
+                }
+            }
+        }
+
+        stage('Security Scan') {
+            when {
+                not { params.SKIP_TESTS }
+            }
+            parallel {
+                stage('Container Security Scan') {
+                    steps {
+                        container('trivy') {
+                            script {
+                                sh """
+                                    trivy image --exit-code 1 --severity HIGH,CRITICAL \
+                                        --format json --output trivy-report.json \
+                                        ${env.REGISTRY}/${env.IMAGE_NAME}:${params.IMAGE_TAG}
+                                """
+                                
+                                archiveArtifacts artifacts: 'trivy-report.json', fingerprint: true
+                                publishHTML([
+                                    allowMissing: false,
+                                    alwaysLinkToLastBuild: true,
+                                    keepAll: true,
+                                    reportDir: '.',
+                                    reportFiles: 'trivy-report.json',
+                                    reportName: 'Trivy Security Report'
+                                ])
+                            }
+                        }
+                    }
+                    post {
+                        failure {
+                            slackSend(
+                                channel: env.SLACK_CHANNEL,
+                                color: 'danger',
+                                message: "🚨 Security scan failed for ${env.IMAGE_NAME}:${params.IMAGE_TAG}"
+                            )
+                        }
+                    }
+                }
+
+                stage('Kubernetes Security Validation') {
+                    steps {
+                        container('kubectl') {
+                            script {
+                                sh """
+                                    # Validate Kubernetes manifests
+                                    kubectl --dry-run=client apply -f k8s/ || exit 1
+                                    
+                                    # Check resource quotas
+                                    kubectl describe quota -n ${env.KUBE_NAMESPACE} || true
+                                """
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        stage('Deploy Application') {
+            steps {
+                container('helm') {
+                    script {
+                        sh """
+                            # Deploy using Helm
+                            helm upgrade --install my-app ./helm/my-app \
+                                --namespace ${env.KUBE_NAMESPACE} \
+                                --set image.repository=${env.REGISTRY}/${env.IMAGE_NAME} \
+                                --set image.tag=${params.IMAGE_TAG} \
+                                --set environment=${params.DEPLOY_ENV} \
+                                --wait \
+                                --timeout=600s
+                        """
+                    }
+                }
+            }
+        }
+
+        stage('Post-deployment Validation') {
+            steps {
+                container('kubectl') {
+                    script {
+                        sh """
+                            # Wait for rollout to complete
+                            kubectl rollout status deployment/my-app -n ${env.KUBE_NAMESPACE} --timeout=300s
+                            
+                            # Check pod health
+                            kubectl get pods -n ${env.KUBE_NAMESPACE} -l app=my-app
+                            
+                            # Run health checks
+                            sleep 30
+                            kubectl exec -n ${env.KUBE_NAMESPACE} deployment/my-app -- curl -f http://localhost:8080/health || exit 1
+                        """
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        success {
+            slackSend(
+                channel: env.SLACK_CHANNEL,
+                color: 'good',
+                message: """✅ Deployment successful!
+                Environment: ${params.DEPLOY_ENV}
+                Image: ${env.IMAGE_NAME}:${params.IMAGE_TAG}
+                Job: ${env.BUILD_URL}"""
+            )
+        }
+        
+        failure {
+            slackSend(
+                channel: env.SLACK_CHANNEL,
+                color: 'danger',
+                message: """❌ Deployment failed!
+                Environment: ${params.DEPLOY_ENV}
+                Image: ${env.IMAGE_NAME}:${params.IMAGE_TAG}
+                Job: ${env.BUILD_URL}"""
+            )
+        }
+    }
+}

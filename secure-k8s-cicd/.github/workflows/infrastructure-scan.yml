@@ -1,0 +1,62 @@
+name: Infrastructure Security Scan
+
+on:
+  push:
+    paths:
+      - 'k8s/**'
+      - 'terraform/**'
+      - 'helm/**'
+  pull_request:
+    paths:
+      - 'k8s/**'
+      - 'terraform/**'
+      - 'helm/**'
+
+jobs:
+  kubernetes-security-scan:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run Kubesec scan
+      run: |
+        curl -sSX POST --data-binary @k8s/deployment.yaml \
+          https://v2.kubesec.io/scan > kubesec-results.json
+        
+    - name: Upload Kubesec results
+      uses: actions/upload-artifact@v4
+      with:
+        name: kubesec-results
+        path: kubesec-results.json
+
+    - name: Run Polaris scan
+      uses: fairwindsops/polaris-action@v1.0
+      with:
+        config: polaris.yaml
+
+    - name: Run OPA Conftest
+      uses: instrumenta/conftest-action@master
+      with:
+        files: k8s/*.yaml
+        policy: security-policies
+
+  terraform-security-scan:
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.modified, 'terraform/')
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Run tfsec
+      uses: aquasecurity/tfsec-action@v1.0.0
+      with:
+        soft_fail: true
+
+    - name: Run Checkov
+      uses: bridgecrewio/checkov-action@master
+      with:
+        directory: terraform/
+        framework: terraform
