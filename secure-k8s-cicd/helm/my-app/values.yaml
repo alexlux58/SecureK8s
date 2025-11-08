@@ -1,0 +1,117 @@
+replicaCount: 3
+
+image:
+  repository: ghcr.io/your-org/my-app
+  pullPolicy: IfNotPresent
+  tag: ""
+
+imagePullSecrets: []
+nameOverride: ""
+fullnameOverride: ""
+
+serviceAccount:
+  create: true
+  annotations: {}
+  name: ""
+
+podAnnotations: {}
+
+podSecurityContext:
+  fsGroup: 1001
+  runAsNonRoot: true
+  runAsUser: 1001
+
+securityContext:
+  allowPrivilegeEscalation: false
+  capabilities:
+    drop:
+    - ALL
+  readOnlyRootFilesystem: true
+  runAsNonRoot: true
+  runAsUser: 1001
+
+service:
+  type: ClusterIP
+  port: 80
+  targetPort: 3000
+
+ingress:
+  enabled: true
+  className: "nginx"
+  annotations:
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    cert-manager.io/cluster-issuer: "letsencrypt-prod"
+  hosts:
+    - host: my-app.example.com
+      paths:
+        - path: /
+          pathType: Prefix
+  tls:
+    - secretName: my-app-tls
+      hosts:
+        - my-app.example.com
+
+resources:
+  limits:
+    cpu: 500m
+    memory: 512Mi
+  requests:
+    cpu: 250m
+    memory: 256Mi
+
+autoscaling:
+  enabled: true
+  minReplicas: 3
+  maxReplicas: 10
+  targetCPUUtilizationPercentage: 80
+  targetMemoryUtilizationPercentage: 80
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity:
+  podAntiAffinity:
+    preferredDuringSchedulingIgnoredDuringExecution:
+    - weight: 100
+      podAffinityTerm:
+        labelSelector:
+          matchExpressions:
+          - key: app.kubernetes.io/name
+            operator: In
+            values:
+            - my-app
+        topologyKey: kubernetes.io/hostname
+
+networkPolicy:
+  enabled: true
+  ingress:
+    enabled: true
+    from:
+    - namespaceSelector:
+        matchLabels:
+          name: ingress-system
+  egress:
+    enabled: true
+    to:
+    - namespaceSelector:
+        matchLabels:
+          name: messaging
+      podSelector:
+        matchLabels:
+          app: rabbitmq
+
+monitoring:
+  enabled: true
+  serviceMonitor:
+    enabled: true
+    interval: 30s
+    path: /metrics
+
+rabbitmq:
+  host: rabbitmq-service.messaging.svc.cluster.local
+  port: 5672
+  username: admin
+  existingSecret: rabbitmq-secret
+  existingSecretPasswordKey: password

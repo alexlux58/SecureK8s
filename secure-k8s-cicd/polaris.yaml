@@ -1,0 +1,16 @@
+checks:
+  cpuRequestsMissing: warning
+  cpuLimitsMissing: warning
+  memoryRequestsMissing: warning
+  memoryLimitsMissing: warning
+  runAsRootAllowed: error
+  runAsPrivileged: error
+  notReadOnlyRootFilesystem: warning
+  privilegeEscalationAllowed: error
+  dangerousCapabilities: error
+  insecureCapabilities: warning
+  hostNetworkSet: error
+  hostPIDSet: error
+  hostIPCSet: error
+  hostPortSet: warning
+  tlsSettingsMissing: warning
